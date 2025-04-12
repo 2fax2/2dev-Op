@@ -1,4 +1,3 @@
---// Variáveis principais
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
@@ -6,9 +5,7 @@ local UserInputService = game:GetService("UserInputService")
 local Debris = game:GetService("Debris")
 local Player = Players.LocalPlayer
 local Connection, Parried, Cooldown
-local SpamEnabled = false
 
---// Função para obter a bola real
 local function GetBall()
     for _, Ball in ipairs(workspace.Balls:GetChildren()) do
         if Ball:GetAttribute("realBall") then
@@ -17,7 +14,6 @@ local function GetBall()
     end
 end
 
---// Reset da conexão anterior
 local function ResetConnection()
     if Connection then
         Connection:Disconnect()
@@ -25,7 +21,6 @@ local function ResetConnection()
     end
 end
 
---// Conecta a nova bola quando criada
 workspace.Balls.ChildAdded:Connect(function()
     local Ball = GetBall()
     if not Ball then return end
@@ -35,7 +30,6 @@ workspace.Balls.ChildAdded:Connect(function()
     end)
 end)
 
---// Interface (UI)
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 ScreenGui.Name = "BladeBallAutoParry"
 ScreenGui.ResetOnSpawn = false
@@ -46,7 +40,7 @@ MainUI.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainUI.BackgroundTransparency = 0.3
 MainUI.BorderSizePixel = 0
 MainUI.Position = UDim2.new(0.7, 0, 0.3, 0)
-MainUI.Size = UDim2.new(0, 260, 0, 200)
+MainUI.Size = UDim2.new(0, 260, 0, 190)
 MainUI.Visible = true
 Instance.new("UICorner", MainUI).CornerRadius = UDim.new(0, 12)
 
@@ -59,36 +53,54 @@ NameLabel.Position = UDim2.new(0, 10, 1, -20)
 NameLabel.Size = UDim2.new(1, -20, 0, 20)
 NameLabel.BackgroundTransparency = 1
 
---// Botões
-local function CreateButton(name, position, color)
-    local btn = Instance.new("TextButton", MainUI)
-    btn.Text = name
-    btn.Size = UDim2.new(1, -20, 0, 40)
-    btn.Position = position
-    btn.BackgroundColor3 = color
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 16
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-    return btn
-end
-
-local Toggle = CreateButton("Auto Parry [ON]", UDim2.new(0, 10, 0, 10), Color3.fromRGB(50, 200, 50))
-local SpamBtn = CreateButton("Auto Parry Spam [OFF]", UDim2.new(0, 10, 0, 60), Color3.fromRGB(100, 100, 100))
-local DestroyBtn = CreateButton("Destroy Script", UDim2.new(0, 10, 0, 110), Color3.fromRGB(200, 50, 50))
-
---// Estados
 local Enabled = true
+local Toggle = Instance.new("TextButton", MainUI)
+Toggle.Text = "Auto Parry [ON]"
+Toggle.Size = UDim2.new(1, -20, 0, 40)
+Toggle.Position = UDim2.new(0, 10, 0, 10)
+Toggle.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+Toggle.TextColor3 = Color3.new(1, 1, 1)
+Toggle.Font = Enum.Font.GothamBold
+Toggle.TextSize = 16
+Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0, 8)
 Toggle.MouseButton1Click:Connect(function()
     Enabled = not Enabled
     Toggle.Text = Enabled and "Auto Parry [ON]" or "Auto Parry [OFF]"
     Toggle.BackgroundColor3 = Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(100, 100, 100)
 end)
 
-SpamBtn.MouseButton1Click:Connect(function()
+local SpamEnabled = false
+local SpamToggle = Instance.new("TextButton", MainUI)
+SpamToggle.Text = "Auto Spam [OFF]"
+SpamToggle.Size = UDim2.new(1, -20, 0, 40)
+SpamToggle.Position = UDim2.new(0, 10, 0, 60)
+SpamToggle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+SpamToggle.TextColor3 = Color3.new(1, 1, 1)
+SpamToggle.Font = Enum.Font.GothamBold
+SpamToggle.TextSize = 16
+Instance.new("UICorner", SpamToggle).CornerRadius = UDim.new(0, 8)
+SpamToggle.MouseButton1Click:Connect(function()
     SpamEnabled = not SpamEnabled
-    SpamBtn.Text = SpamEnabled and "Auto Parry Spam [ON]" or "Auto Parry Spam [OFF]"
-    SpamBtn.BackgroundColor3 = SpamEnabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(100, 100, 100)
+    SpamToggle.Text = SpamEnabled and "Auto Spam [ON]" or "Auto Spam [OFF]"
+    SpamToggle.BackgroundColor3 = SpamEnabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(100, 100, 100)
+end)
+
+local DestroyBtn = Instance.new("TextButton", MainUI)
+DestroyBtn.Text = "Destroy Script"
+DestroyBtn.Size = UDim2.new(1, -20, 0, 40)
+DestroyBtn.Position = UDim2.new(0, 10, 0, 110)
+DestroyBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+DestroyBtn.TextColor3 = Color3.new(1, 1, 1)
+DestroyBtn.Font = Enum.Font.GothamBold
+DestroyBtn.TextSize = 16
+Instance.new("UICorner", DestroyBtn).CornerRadius = UDim.new(0, 8)
+DestroyBtn.MouseButton1Click:Connect(function()
+    Enabled = false
+    SpamEnabled = false
+    MainUI.Visible = false
+    if Connection then Connection:Disconnect() end
+    if ScreenGui then ScreenGui:Destroy() end
+    script:Destroy()
 end)
 
 UserInputService.InputBegan:Connect(function(input)
@@ -97,13 +109,6 @@ UserInputService.InputBegan:Connect(function(input)
     end
 end)
 
-DestroyBtn.MouseButton1Click:Connect(function()
-    if Connection then Connection:Disconnect() end
-    if ScreenGui then ScreenGui:Destroy() end
-    script:Destroy()
-end)
-
---// Som
 local function PlayParrySound()
     local sound = Instance.new("Sound")
     sound.SoundId = "rbxassetid://6026984224"
@@ -113,39 +118,40 @@ local function PlayParrySound()
     Debris:AddItem(sound, 2)
 end
 
---// Auto Parry Melhorado (fix bolas rápidas e curvas)
 RunService.Heartbeat:Connect(function()
-    if not Enabled then return end
-    local Ball = GetBall()
-    local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not Ball or not HRP or Ball:GetAttribute("target") ~= Player.Name then return end
-    if Parried then return end
-
-    local Distance = (HRP.Position - Ball.Position).Magnitude
-    local Velocity = Ball.AssemblyLinearVelocity.Magnitude
-
-    -- Tempo estimado de impacto ajustado
-    local PredictedTime = Distance / (Velocity + 1)
-    if PredictedTime <= 0.53 then -- mais sensível e eficaz em bolas com curvas e alta velocidade
+    if not SpamEnabled or not Enabled then return end
+    for _ = 1, 4 do
         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+    end
+end)
+
+RunService.PreSimulation:Connect(function()
+    if not Enabled then return end
+    local Ball, HRP = GetBall(), Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not Ball or not HRP then return end
+
+    local Speed = Ball.zoomies.VectorVelocity.Magnitude
+    local Distance = (HRP.Position - Ball.Position).Magnitude
+    local ReactionTime = 0.52 -- aprimorado
+
+    if Ball:GetAttribute("target") == Player.Name and not Parried and Distance / Speed <= ReactionTime then
+        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
         Parried = true
         Cooldown = tick()
         PlayParrySound()
-    end
-
-    if (tick() - (Cooldown or 0)) >= 1 then
-        Parried = false
-    end
-end)
-
---// Auto Parry Spam (op 1v1)
-UserInputService.InputBegan:Connect(function(input, processed)
-    if not processed and SpamEnabled and Enabled and input.KeyCode == Enum.KeyCode.E then
-        for i = 1, 5 do
-            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
-            task.wait(0.012)
+        if (tick() - Cooldown) >= 1 then
+            Parried = false
         end
     end
 end)
+
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.T then
+        SpamEnabled = not SpamEnabled
+        SpamToggle.Text = SpamEnabled and "Auto Spam [ON]" or "Auto Spam [OFF]"
+        SpamToggle.BackgroundColor3 = SpamEnabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(100, 100, 100)
+    end
+end)
+
+print("Injected successfully: By 2Dev Blade Ball 1.9.7 👻")
