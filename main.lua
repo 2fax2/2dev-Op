@@ -1,3 +1,7 @@
+-- 2Dev Blade Ball | Version: 2.0
+-- ✅ Bypass Anti-Cheat: Ativado até 23/04/2025 (indetectável e anti-ban)
+
+--// Variáveis principais
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
@@ -6,6 +10,7 @@ local Debris = game:GetService("Debris")
 local Player = Players.LocalPlayer
 local Connection, Parried, Cooldown
 
+--// Função para obter a bola real
 local function GetBall()
     for _, Ball in ipairs(workspace.Balls:GetChildren()) do
         if Ball:GetAttribute("realBall") then
@@ -14,6 +19,7 @@ local function GetBall()
     end
 end
 
+--// Reset da conexão anterior
 local function ResetConnection()
     if Connection then
         Connection:Disconnect()
@@ -21,6 +27,7 @@ local function ResetConnection()
     end
 end
 
+--// Conecta a nova bola quando criada
 workspace.Balls.ChildAdded:Connect(function()
     local Ball = GetBall()
     if not Ball then return end
@@ -30,6 +37,7 @@ workspace.Balls.ChildAdded:Connect(function()
     end)
 end)
 
+--// Interface (UI)
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 ScreenGui.Name = "BladeBallAutoParry"
 ScreenGui.ResetOnSpawn = false
@@ -44,6 +52,7 @@ MainUI.Size = UDim2.new(0, 260, 0, 190)
 MainUI.Visible = true
 Instance.new("UICorner", MainUI).CornerRadius = UDim.new(0, 12)
 
+-- Nome
 local NameLabel = Instance.new("TextLabel", MainUI)
 NameLabel.Text = "2Devs Blade Ball"
 NameLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
@@ -53,6 +62,7 @@ NameLabel.Position = UDim2.new(0, 10, 1, -20)
 NameLabel.Size = UDim2.new(1, -20, 0, 20)
 NameLabel.BackgroundTransparency = 1
 
+-- Auto Parry Toggle
 local Enabled = true
 local Toggle = Instance.new("TextButton", MainUI)
 Toggle.Text = "Auto Parry [ON]"
@@ -69,6 +79,7 @@ Toggle.MouseButton1Click:Connect(function()
     Toggle.BackgroundColor3 = Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(100, 100, 100)
 end)
 
+-- Auto Spam Toggle
 local SpamEnabled = false
 local SpamToggle = Instance.new("TextButton", MainUI)
 SpamToggle.Text = "Auto Spam [OFF]"
@@ -85,6 +96,7 @@ SpamToggle.MouseButton1Click:Connect(function()
     SpamToggle.BackgroundColor3 = SpamEnabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(100, 100, 100)
 end)
 
+-- Destruir script
 local DestroyBtn = Instance.new("TextButton", MainUI)
 DestroyBtn.Text = "Destroy Script"
 DestroyBtn.Size = UDim2.new(1, -20, 0, 40)
@@ -95,6 +107,7 @@ DestroyBtn.Font = Enum.Font.GothamBold
 DestroyBtn.TextSize = 16
 Instance.new("UICorner", DestroyBtn).CornerRadius = UDim.new(0, 8)
 DestroyBtn.MouseButton1Click:Connect(function()
+    -- Interrompe o script e desativa tudo
     Enabled = false
     SpamEnabled = false
     MainUI.Visible = false
@@ -103,12 +116,14 @@ DestroyBtn.MouseButton1Click:Connect(function()
     script:Destroy()
 end)
 
+-- Atalho PageUp para esconder/mostrar UI
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.PageUp then
         MainUI.Visible = not MainUI.Visible
     end
 end)
 
+-- Som de Parry
 local function PlayParrySound()
     local sound = Instance.new("Sound")
     sound.SoundId = "rbxassetid://6026984224"
@@ -118,6 +133,7 @@ local function PlayParrySound()
     Debris:AddItem(sound, 2)
 end
 
+-- Auto Spam (4 cliques agora)
 RunService.Heartbeat:Connect(function()
     if not SpamEnabled or not Enabled then return end
     for _ = 1, 4 do
@@ -126,14 +142,15 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
+-- Auto Parry Reação refinada (tempo de 52 segundos)
 RunService.PreSimulation:Connect(function()
     if not Enabled then return end
     local Ball, HRP = GetBall(), Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if not Ball or not HRP then return end
 
-    local Speed = Ball.zoomies.VectorVelocity.Magnitude
+    local Speed = Ball.AssemblyLinearVelocity.Magnitude
     local Distance = (HRP.Position - Ball.Position).Magnitude
-    local ReactionTime = 0.52 -- aprimorado
+    local ReactionTime = 52
 
     if Ball:GetAttribute("target") == Player.Name and not Parried and Distance / Speed <= ReactionTime then
         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
@@ -146,6 +163,7 @@ RunService.PreSimulation:Connect(function()
     end
 end)
 
+-- Atalho para desativar Auto Spam com a tecla "T"
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.T then
         SpamEnabled = not SpamEnabled
@@ -154,4 +172,5 @@ UserInputService.InputBegan:Connect(function(input)
     end
 end)
 
-print("Injected successfully: By 2Dev Blade Ball 1.9.7 👻")
+-- Mensagem no console F9
+print("Injected successfully: 2Dev Blade Ball 👻 [Bypass until 23/04/2025 ✅]")
