@@ -150,7 +150,7 @@ RunService.PreSimulation:Connect(function()
 
     local Speed = Ball.AssemblyLinearVelocity.Magnitude
     local Distance = (HRP.Position - Ball.Position).Magnitude
-    local ReactionTime = 52
+    local ReactionTime = 0.52
 
     if Ball:GetAttribute("target") == Player.Name and not Parried and Distance / Speed <= ReactionTime then
         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
