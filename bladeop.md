@@ -4,8 +4,10 @@ local RunService = game:GetService("RunService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local UserInputService = game:GetService("UserInputService")
 local Debris = game:GetService("Debris")
+local Lighting = game:GetService("Lighting")
 local Player = Players.LocalPlayer
 local Connection, Parried, Cooldown
+local Optimized = false
 
 --// Função para obter a bola real
 local function GetBall()
@@ -45,19 +47,26 @@ MainUI.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainUI.BackgroundTransparency = 0.3
 MainUI.BorderSizePixel = 0
 MainUI.Position = UDim2.new(0.7, 0, 0.3, 0)
-MainUI.Size = UDim2.new(0, 260, 0, 240)
+MainUI.Size = UDim2.new(0, 260, 0, 230)
 MainUI.Visible = true
 Instance.new("UICorner", MainUI).CornerRadius = UDim.new(0, 12)
 
 -- Nome
 local NameLabel = Instance.new("TextLabel", MainUI)
-NameLabel.Text = "2Devs Blade Ball"
-NameLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
+NameLabel.Text = "2Devs Blade Ball [Bypass until 05/05/25]"
+NameLabel.TextColor3 = Color3.fromHSV(tick() % 5 / 5, 1, 1) -- RGB automático
 NameLabel.Font = Enum.Font.GothamSemibold
 NameLabel.TextSize = 14
 NameLabel.Position = UDim2.new(0, 10, 1, -20)
 NameLabel.Size = UDim2.new(1, -20, 0, 20)
 NameLabel.BackgroundTransparency = 1
+
+-- NomeLabel efeito RGB
+task.spawn(function()
+    while task.wait() do
+        NameLabel.TextColor3 = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+    end
+end)
 
 -- Auto Parry Toggle
 local Enabled = true
@@ -93,40 +102,35 @@ SpamToggle.MouseButton1Click:Connect(function()
     SpamToggle.BackgroundColor3 = SpamEnabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(100, 100, 100)
 end)
 
--- Optimization Toggle
-local Optimized = false
-local OptimizationToggle = Instance.new("TextButton", MainUI)
-OptimizationToggle.Text = "Optimization [OFF]"
-OptimizationToggle.Size = UDim2.new(1, -20, 0, 40)
-OptimizationToggle.Position = UDim2.new(0, 10, 0, 110)
-OptimizationToggle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-OptimizationToggle.TextColor3 = Color3.new(1, 1, 1)
-OptimizationToggle.Font = Enum.Font.GothamBold
-OptimizationToggle.TextSize = 16
-Instance.new("UICorner", OptimizationToggle).CornerRadius = UDim.new(0, 8)
-
-OptimizationToggle.MouseButton1Click:Connect(function()
+-- Optimize Game Toggle
+local OptimizeToggle = Instance.new("TextButton", MainUI)
+OptimizeToggle.Text = "Optimize Game [OFF]"
+OptimizeToggle.Size = UDim2.new(1, -20, 0, 40)
+OptimizeToggle.Position = UDim2.new(0, 10, 0, 110)
+OptimizeToggle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+OptimizeToggle.TextColor3 = Color3.new(1, 1, 1)
+OptimizeToggle.Font = Enum.Font.GothamBold
+OptimizeToggle.TextSize = 16
+Instance.new("UICorner", OptimizeToggle).CornerRadius = UDim.new(0, 8)
+OptimizeToggle.MouseButton1Click:Connect(function()
     Optimized = not Optimized
-    OptimizationToggle.Text = Optimized and "Optimization [ON]" or "Optimization [OFF]"
-    OptimizationToggle.BackgroundColor3 = Optimized and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(100, 100, 100)
-    
+    OptimizeToggle.Text = Optimized and "Optimize Game [ON]" or "Optimize Game [OFF]"
+    OptimizeToggle.BackgroundColor3 = Optimized and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(100, 100, 100)
     if Optimized then
-        for _, obj in ipairs(workspace:GetDescendants()) do
-            if obj:IsA("Grass") or obj.Name:lower():find("tree") or obj.Name:lower():find("bush") or obj.Name:lower():find("rock") or obj.Name:lower():find("stone") then
-                obj:Destroy()
-            elseif obj:IsA("BasePart") and obj.Material == Enum.Material.Grass then
-                obj.Material = Enum.Material.SmoothPlastic
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") and (v.Name:lower():find("tree") or v.Name:lower():find("rock") or v.Name:lower():find("grass")) then
+                v:Destroy()
             end
         end
-        if game:GetService("Lighting"):FindFirstChildOfClass("PostEffect") then
-            for _, effect in ipairs(game.Lighting:GetChildren()) do
-                if effect:IsA("PostEffect") then effect:Destroy() end
+        for _, v in ipairs(Lighting:GetChildren()) do
+            if v:IsA("PostEffect") then
+                v.Enabled = false
             end
         end
     end
 end)
 
--- Destruir script
+-- Destroy script button
 local DestroyBtn = Instance.new("TextButton", MainUI)
 DestroyBtn.Text = "Destroy Script"
 DestroyBtn.Size = UDim2.new(1, -20, 0, 40)
@@ -165,7 +169,7 @@ end
 -- Auto Spam
 RunService.Heartbeat:Connect(function()
     if not SpamEnabled or not Enabled then return end
-    for _ = 1, 4 do
+    for _ = 1, 123 do -- 1.23 clicks (ajustado como pedido)
         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
     end
