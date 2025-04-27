@@ -169,7 +169,7 @@ end
 -- Auto Spam
 RunService.Heartbeat:Connect(function()
     if not SpamEnabled or not Enabled then return end
-    for _ = 1, 123 do -- 1.23 clicks (ajustado como pedido)
+    for _ = 1, 23 clicks (ajustado como pedido)
         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
     end
